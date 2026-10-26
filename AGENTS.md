@@ -26,6 +26,8 @@ npm run check        # размер и отсутствие внешних за�
 ```
 Research-страницы открываются через любой статический сервер из корня проекта, например `python -m http.server 5173`, потом http://127.0.0.1:5173/research/.
 
+Публикация: `npm run site` собирает `_site/` (главная, /play/, /demo/, /research/). Пуш в `main` → GitHub Actions сам выкладывает сайт: https://spisusha.github.io/stackball-save-the-kitty/ . Репозиторий публичный: https://github.com/spisusha/stackball-save-the-kitty . В этом репозитории git-автор — скрытый адрес GitHub (noreply), личную почту не использовать.
+
 ## Правила проекта
 - Плейбл — один HTML без внешних запросов (никаких CDN, Google Fonts, внешних картинок).
 - Звук только после первого касания, кнопка в магазин только на end card.
