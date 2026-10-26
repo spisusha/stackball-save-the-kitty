@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stack Ball: варианты плейбла</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --paper: #ffffff; --ink: #111111; --grey: #5f5f5f; --line: #e3e3e3; --signal: #ffd400; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 16px; line-height: 1.5; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px 80px; }
+  header.top { border-bottom: 3px solid var(--ink); padding: 32px 0 22px; }
+  .stage { display: inline-block; background: var(--signal); font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; padding: 4px 8px; }
+  h1 { font-weight: 900; font-size: clamp(32px, 7vw, 60px); line-height: 1; letter-spacing: -.03em; margin: 14px 0 12px; }
+  .lead { font-size: 18px; color: var(--grey); max-width: 720px; margin: 0; }
+  h2 { font-weight: 900; font-size: 22px; letter-spacing: -.01em; margin: 0 0 10px; }
+  p { margin: 0 0 12px; }
+  .muted { color: var(--grey); }
+  .small { font-size: 14px; }
+
+  .layout { display: grid; grid-template-columns: 360px 1fr; gap: 36px; padding-top: 28px; align-items: start; }
+  .layout > div { min-width: 0; }
+  .phone { width: 360px; height: 720px; border: 10px solid var(--ink); border-radius: 36px; overflow: hidden; background: #000; position: sticky; top: 16px; }
+  .phone iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+  .ctrl { margin-bottom: 18px; }
+  .ctrl .label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--grey); font-weight: 700; margin-bottom: 6px; }
+  .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--ink); }
+  .seg button { font: inherit; font-size: 15px; font-weight: 700; border: 0; background: #fff; color: var(--ink); padding: 9px 14px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--ink); }
+  .seg button.on { background: var(--ink); color: #fff; }
+  .restart { font: inherit; font-size: 15px; font-weight: 700; border: 1px solid var(--ink); background: var(--signal); padding: 9px 14px; cursor: pointer; }
+
+  .table { width: 100%; overflow-x: auto; margin: 6px 0 22px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 520px; }
+  th, td { text-align: left; vertical-align: top; padding: 9px 10px 9px 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--grey); font-weight: 700; border-bottom: 1px solid var(--ink); }
+  tr.on td { background: #fff8cc; }
+  tr.on td:first-child { box-shadow: inset 4px 0 0 var(--signal); padding-left: 8px; }
+
+  .funnel { border-top: 1px solid var(--ink); margin-bottom: 8px; }
+  .frow { display: grid; grid-template-columns: 170px 1fr 44px; gap: 10px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .frow .bar { height: 10px; background: #f1f1ef; }
+  .frow .bar i { display: block; height: 100%; width: 0; background: var(--ink); transition: width .25s; }
+  .frow.hot .bar i { background: var(--signal); }
+  .frow b { text-align: right; font-variant-numeric: tabular-nums; }
+  .log { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; color: var(--grey); max-height: 120px; overflow: auto; margin: 6px 0 0; white-space: pre-wrap; }
+  .linkbtn { font: inherit; font-size: 14px; background: none; border: 0; padding: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; color: var(--ink); }
+
+  footer { padding-top: 28px; font-size: 13px; color: var(--grey); }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; gap: 24px; }
+    .phone { position: static; width: min(360px, 100%); height: 640px; margin: 0 auto; }
+    .frow { grid-template-columns: 130px 1fr 36px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <span class="stage">Этап 3: варианты для A/B-теста</span>
+  <h1>Stack Ball: Спаси котика</h1>
+  <p class="lead">Один плейбл и три варианта из одной базы. В каждом меняется одна вещь, чтобы в тесте было понятно, что сработало. Рядом с игрой видно, какие события плейбл отправляет в аналитику прямо сейчас.</p>
+</header>
+
+<div class="layout">
+  <div class="phone"><iframe id="game" title="Плейбл" allow="autoplay"></iframe></div>
+
+  <div>
+    <div class="ctrl">
+      <div class="label">Вариант</div>
+      <div class="seg" data-key="variant">
+        <button data-v="classic">A. Классика</button>
+        <button data-v="rescue">B. Спаси котика</button>
+        <button data-v="pick">C. Выбери шар</button>
+      </div>
+    </div>
+    <div class="ctrl">
+      <div class="label">Сначала показать, как играть</div>
+      <div class="seg" data-key="demo">
+        <button data-v="0">Нет</button>
+        <button data-v="1">Да, 3 секунды</button>
+      </div>
+    </div>
+    <div class="ctrl">
+      <div class="label">Язык</div>
+      <div class="seg" data-key="lang">
+        <button data-v="en">English</button>
+        <button data-v="ru">Русский</button>
+      </div>
+      <button class="restart" id="restart" style="margin-left:8px">Перезапустить</button>
+    </div>
+
+    <h2>Что проверяет каждый вариант</h2>
+    <div class="table"><table>
+      <tr><th>Вариант</th><th>Что меняется</th><th>Гипотеза</th><th>Смотрим</th></tr>
+      <tr data-row="classic"><td><b>A. Классика</b></td><td>Только механика, два уровня</td><td>Контроль: так выглядит обычная реклама Stack Ball</td><td>IPM как точка отсчёта</td></tr>
+      <tr data-row="rescue"><td><b>B. Спаси котика</b></td><td>+ котик в клетке и шипы сверху</td><td>Эмоция и давление поднимут IPM</td><td>IPM, доля дошедших до конца, удержание D1</td></tr>
+      <tr data-row="pick"><td><b>C. Выбери шар</b></td><td>B + выбор шара на старте</td><td>Выбор в первые секунды увеличит долю начавших играть</td><td>Первое касание, время до него, CTR</td></tr>
+      <tr data-row="demo"><td><b>+ Показ</b></td><td>Первые 3 секунды игра играет сама, потом «Теперь ты!»</td><td>Меньше людей растеряется на старте</td><td>Время до первого касания, доля начавших</td></tr>
+    </table></div>
+
+    <h2>Воронка на этой странице</h2>
+    <p class="muted small">Считает события из плейбла, пока открыта страница. В настоящей кампании те же события шли бы в рекламную сеть или AppsFlyer.</p>
+    <div class="funnel" id="funnel"></div>
+    <button class="linkbtn" id="reset">Сбросить счётчики</button>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<footer>Неофициальный концепт для собеседования. Stack Ball — игра Azur Games, все права у правообладателя. Сделано с Claude Code.</footer>
+</div>
+
+<script>
+  const STEPS = [
+    ['loaded', 'Загрузился'],
+    ['first_touch', 'Начал играть'],
+    ['ball_pick', 'Выбрал шар'],
+    ['demo_done', 'Досмотрел показ'],
+    ['rings_10', 'Пробил 10 колец'],
+    ['fire_mode', 'Режим огня'],
+    ['fail', 'Проиграл'],
+    ['retry', 'Нажал «ещё раз»'],
+    ['win', 'Победил'],
+    ['endcard_shown', 'Увидел end card'],
+    ['cta_click', 'Нажал «Играть»'],
+  ];
+  const HOT = new Set(['first_touch', 'endcard_shown', 'cta_click']);
+  const counts = {};
+  const state = { variant: 'rescue', demo: '0', lang: 'en' };
+  const frame = document.getElementById('game');
+  const funnel = document.getElementById('funnel');
+  const log = document.getElementById('log');
+
+  // Build funnel rows once; values are updated with textContent only
+  const rows = {};
+  STEPS.forEach(([key, label]) => {
+    const r = document.createElement('div'); r.className = 'frow' + (HOT.has(key) ? ' hot' : '');
+    const name = document.createElement('span'); name.textContent = label;
+    const bar = document.createElement('div'); bar.className = 'bar'; const fill = document.createElement('i'); bar.appendChild(fill);
+    const num = document.createElement('b'); num.textContent = '0';
+    r.append(name, bar, num); funnel.appendChild(r);
+    rows[key] = { fill, num };
+  });
+  function render() {
+    const base = Math.max(1, counts.loaded || 0);
+    STEPS.forEach(([key]) => {
+      const n = counts[key] || 0;
+      rows[key].num.textContent = n;
+      rows[key].fill.style.width = Math.min(100, (n / base) * 100) + '%';
+    });
+  }
+  render();
+
+  function load() {
+    const q = new URLSearchParams({ variant: state.variant, lang: state.lang });
+    if (state.demo === '1') q.set('demo', '1');
+    frame.src = '../index.html?' + q.toString();
+    document.querySelectorAll('tr[data-row]').forEach((tr) => {
+      const v = tr.dataset.row;
+      tr.classList.toggle('on', v === state.variant || (v === 'demo' && state.demo === '1'));
+    });
+  }
+  document.querySelectorAll('.seg').forEach((seg) => {
+    const key = seg.dataset.key;
+    seg.querySelectorAll('button').forEach((b) => {
+      b.classList.toggle('on', b.dataset.v === state[key]);
+      b.addEventListener('click', () => {
+        state[key] = b.dataset.v;
+        seg.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === b));
+        load();
+      });
+    });
+  });
+  document.getElementById('restart').addEventListener('click', load);
+  document.getElementById('reset').addEventListener('click', () => { Object.keys(counts).forEach((k) => delete counts[k]); log.textContent = ''; render(); });
+
+  // Events come from the playable inside the iframe (same site). Only names and numbers are shown.
+  window.addEventListener('message', (e) => {
+    if (e.source !== frame.contentWindow) return;
+    const d = e.data;
+    if (!d || d.source !== 'stackball-playable' || !d.event || typeof d.event.name !== 'string') return;
+    const ev = d.event;
+    counts[ev.name] = (counts[ev.name] || 0) + 1;
+    render();
+    const extra = Object.entries(ev).filter(([k]) => k !== 'name' && k !== 't').map(([k, v]) => k + '=' + String(v)).join(' ');
+    log.textContent = (String(ev.t).padStart(6, ' ') + ' ms  ' + ev.name + (extra ? '  ' + extra : '')) + '\n' + log.textContent.slice(0, 3000);
+  });
+
+  load();
+</script>
+</body>
+</html>

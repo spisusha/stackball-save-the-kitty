@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stack Ball: ответы и концепции</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root { --paper: #ffffff; --ink: #111111; --grey: #5f5f5f; --line: #e3e3e3; --soft: #f6f6f4; --signal: #ffd400; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 17px; line-height: 1.55; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px 96px; }
+  header.top { border-bottom: 3px solid var(--ink); padding: 40px 0 28px; }
+  .stage { display: inline-block; background: var(--signal); font-weight: 700; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; padding: 4px 8px; }
+  h1 { font-weight: 900; font-size: clamp(36px, 8vw, 72px); line-height: .98; letter-spacing: -.03em; margin: 18px 0 16px; }
+  .lead { font-size: 19px; color: var(--grey); max-width: 700px; margin: 0; }
+  section { padding: 44px 0 12px; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: 0; }
+  h2 { font-weight: 900; font-size: clamp(26px, 5vw, 36px); letter-spacing: -.02em; line-height: 1.1; margin: 0 0 16px; }
+  h3 { font-size: 20px; font-weight: 900; margin: 0 0 6px; letter-spacing: -.01em; }
+  p { margin: 0 0 14px; max-width: 780px; }
+  .muted { color: var(--grey); }
+  .small { font-size: 14px; }
+  mark { background: var(--signal); color: var(--ink); padding: 0 3px; }
+  a { color: var(--ink); text-underline-offset: 3px; }
+
+  .shots { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 16px 0 14px; }
+  .shots figure { margin: 0; }
+  .shots img { width: 100%; display: block; border: 1px solid var(--line); }
+  .shots figcaption { font-size: 13px; color: var(--grey); margin-top: 6px; line-height: 1.35; }
+
+  .demo { display: grid; grid-template-columns: 360px 1fr; gap: 32px; align-items: start; margin-top: 8px; }
+  .phone { width: 360px; height: 720px; border: 10px solid var(--ink); border-radius: 36px; overflow: hidden; background: #000; }
+  .phone iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .demo .side p { font-size: 16px; }
+  .switch { display: inline-flex; border: 1px solid var(--ink); margin: 4px 0 18px; }
+  .switch button { font: inherit; font-size: 15px; font-weight: 700; border: 0; background: #fff; padding: 9px 14px; cursor: pointer; }
+  .switch button + button { border-left: 1px solid var(--ink); }
+  .switch button.on { background: var(--ink); color: #fff; }
+
+  .table { width: 100%; overflow-x: auto; margin: 12px 0 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 600px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--grey); font-weight: 700; border-bottom: 1px solid var(--ink); }
+
+  .concepts { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--ink); margin-top: 16px; }
+  .concept { padding: 22px 20px 22px 0; border-bottom: 1px solid var(--line); }
+  .concept:nth-child(2n) { padding-left: 20px; padding-right: 0; border-left: 1px solid var(--line); }
+  .concept .tag { display: inline-block; font-weight: 900; font-size: 13px; letter-spacing: .04em; text-transform: uppercase; padding: 3px 7px; border: 1px solid var(--ink); margin-bottom: 12px; }
+  .concept.rec .tag { background: var(--signal); border-color: var(--signal); }
+  .concept p { font-size: 15px; margin-bottom: 10px; }
+  .concept .pc { font-size: 14px; color: var(--grey); }
+  .concept .pc b { color: var(--ink); }
+  .concept .imgs { display: flex; gap: 8px; margin: 4px 0 12px; }
+  .concept .imgs img { width: 84px; border: 1px solid var(--line); display: block; }
+
+  .verdict { background: var(--ink); color: #fff; padding: 24px; margin: 18px 0 8px; }
+  .verdict p { max-width: none; }
+  .verdict strong { color: var(--signal); }
+  .verdict p:last-child { margin-bottom: 0; }
+
+  footer { padding-top: 32px; font-size: 14px; color: var(--grey); }
+
+  @media (max-width: 860px) {
+    .shots { grid-template-columns: repeat(3, 1fr); }
+    .demo { grid-template-columns: 1fr; }
+    .phone { width: min(360px, 100%); height: auto; aspect-ratio: 1 / 2; margin: 0 auto; }
+    .concepts { grid-template-columns: 1fr; }
+    .concept, .concept:nth-child(2n) { padding: 22px 0; border-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <span class="stage">Перед этапом 2: ответы на вопросы</span>
+  <h1>Как выглядит Stack&nbsp;Ball и&nbsp;что сделаем мы</h1>
+  <p class="lead">Настоящие скриншоты игры, живое превью нашего плейбла вместо схем, ответ на вопрос «не копия ли это» и четыре концепции на выбор.</p>
+</header>
+
+<section>
+  <h2>Stack Ball в оригинале</h2>
+  <p>Официальные скриншоты из App Store, у игры 847 тысяч оценок. Видно три вида башен: воксельные (рассыпаются на кубики), из плоских плит и шестиугольные. Сверху всегда полоса уровня и счёт, фон — яркий градиент.</p>
+  <div class="shots">
+    <figure><img src="refs/sb-1.jpg" alt="Stack Ball: синяя воксельная башня рассыпается кубиками"><figcaption>Воксельная башня, кубики во все стороны</figcaption></figure>
+    <figure><img src="refs/sb-2.jpg" alt="Stack Ball: уровень пройден, шахматная платформа"><figcaption>Финиш: шахматная платформа и «Level completed»</figcaption></figure>
+    <figure><img src="refs/sb-3.jpg" alt="Stack Ball: жёлтая башня с чёрной спиралью"><figcaption>Чёрная спираль по башне, огненный след</figcaption></figure>
+    <figure><img src="refs/sb-4.jpg" alt="Stack Ball: шестиугольные плиты"><figcaption>Шестиугольные плиты, клякса от удара</figcaption></figure>
+    <figure><img src="refs/sb-5.jpg" alt="Stack Ball: зелёная воксельная башня"><figcaption>Цвет меняется с уровнем</figcaption></figure>
+    <figure><img src="refs/sb-6.jpg" alt="Stack Ball: плиты разлетаются"><figcaption>Плиты разлетаются целыми кусками</figcaption></figure>
+  </div>
+  <p class="muted small" id="refsNote">Скриншоты принадлежат Azur Games и лежат здесь только для разбора. Публиковать их не будем.</p>
+</section>
+
+<section>
+  <h2>Схема в research не была итогом</h2>
+  <div class="demo">
+    <div class="phone"><iframe id="game" src="preview/?mode=classic&embed=1" title="Превью плейбла"></iframe></div>
+    <div class="side">
+      <p>Картинки в research показывали только порядок экранов. Здесь живое 3D-превью того, как плейбл будет выглядеть и играться на самом деле. <mark>Зажми и держи</mark>, чтобы пробивать кольца, отпускай перед чёрными секторами.</p>
+      <div class="switch" role="tablist">
+        <button class="on" data-m="classic">Классика</button>
+        <button data-m="rescue">Спасение котика</button>
+      </div>
+      <p><b>Уже есть:</b> 3D-башня со спиралью, кольца разлетаются кусками и кубиками, след за шаром, комбо, режим огня после 15 колец подряд (шар неуязвим), прогресс уровня и счёт, проигрыш «Так близко!» с процентом, финиш на шахматной платформе, подсказка рукой, которая возвращается через 5 секунд без касаний.</p>
+      <p><b>Режим «Спасение»:</b> камера сначала показывает котика в клетке внизу, потом взлетает к шару. Сверху опускаются шипы, нужно успеть пробиться вниз. Победа ломает клетку.</p>
+      <p class="muted small">Это набросок для выбора направления: без звука, без финальной графики и без экрана с кнопкой «Установить». Всё это будет на этапах 2–3.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Есть ли уже плейблы Stack Ball</h2>
+  <p>Да. По кейсу ironSource, у Azur были плейблы Stack Ball ещё в 2019 году: первый проиграл видео, улучшенный выиграл. Посмотреть их в открытом доступе нельзя. Плейблы живут внутри рекламы в других приложениях, а Meta Ad Library показывает только видео и картинки. Все 26 самых показываемых объявлений Azur в Meta сейчас — видео.</p>
+  <p>В работе я бы открыл плейблы Stack Ball и Helix Jump в SocialPeta или Sensor Tower, сыграл в них и записал, что в них есть. Без доступа к этим сервисам я исхожу из кейса и текущих видео.</p>
+</section>
+
+<section>
+  <h2>Не копия ли это</h2>
+  <p>В отделе плейблы делают для игр компании, которые уже крутятся в рекламе. Бриф звучит так: «нужен новый креатив для Stack Ball, который обгонит текущие». Поэтому взять живую игру Azur — это и есть работа. Копией было бы пересобрать их нынешнее видео один в один.</p>
+  <div class="table"><table>
+    <tr><th></th><th>Копия</th><th>Новый креатив</th></tr>
+    <tr><td><b>Что показываем</b></td><td>То же, что в их видео: башня, шар, уровень</td><td>Тот же геймплей плюс крючок, которого в их рекламе нет</td></tr>
+    <tr><td><b>Что проверяем</b></td><td>Ничего нового</td><td>Гипотезу: «давление и спасение поднимут IPM»</td></tr>
+    <tr><td><b>Что скажет хед</b></td><td>«Такое у нас уже есть»</td><td>«Интересно, можно запустить в тест»</td></tr>
+  </table></div>
+  <p>Поэтому я предлагаю не голую классику, а классику плюс новый крючок. Классика остаётся контрольным вариантом в тесте.</p>
+</section>
+
+<section>
+  <h2>Как сделать интереснее: четыре концепции</h2>
+  <p>Две из них уже можно попробовать в превью выше. Выбери одну основную, остальные станут вариантами для теста или отпадут.</p>
+  <div class="concepts">
+    <div class="concept">
+      <span class="tag">A. Сочная классика</span>
+      <h3>Как оригинал, только ярче</h3>
+      <p>Всё, что есть в превью: разлёт кубиков, комбо, режим огня, два уровня, проигрыш «Так близко!».</p>
+      <p class="pc"><b>Плюс:</b> проверенная механика, нужна как контрольный вариант. <b>Минус:</b> похожа на то, что у Azur уже было.</p>
+    </div>
+    <div class="concept rec">
+      <span class="tag">B. Спаси котика (советую)</span>
+      <h3>Давление и эмоция</h3>
+      <p>Внизу котик в клетке, сверху опускаются шипы. Первые 2 секунды камера показывает котика, и сразу понятно, зачем ломать башню.</p>
+      <p class="pc"><b>Плюс:</b> крючка «спаси» нет в текущей рекламе Stack Ball, а сама Azur прямо сейчас крутит похожий приём в Claw Master («успей спасти приз до таймера»). <b>Минус:</b> в самой игре котика нет, поэтому важно смотреть удержание D1, чтобы реклама не обещала чужую игру.</p>
+    </div>
+    <div class="concept">
+      <span class="tag">C. Выбери шар</span>
+      <h3>Выбор в первые секунды</h3>
+      <p>На старте три шара: метеорит, ракета, огненный шар (их иконки есть на скриншотах игры). Каждый по-своему разбивает башню.</p>
+      <p class="pc"><b>Плюс:</b> игрок сразу делает выбор и чувствует, что игра «его». <b>Минус:</b> лишний экран перед геймплеем может снизить долю тех, кто начал играть.</p>
+    </div>
+    <div class="concept">
+      <span class="tag">D. Другая игра: Sponge Art</span>
+      <h3>Новинка Azur, 50 млн+ загрузок</h3>
+      <div class="imgs"><img src="refs/sponge-1.jpg" alt="Sponge Art: губка-баклажан"><img src="refs/sponge-2.jpg" alt="Sponge Art: губка-свинка"></div>
+      <p>Головоломка: натягиваешь резинки на губку, и она превращается в баклажан или свинку. Azur продвигает её с сентября 2026, в рекламе пока короткие видео.</p>
+      <p class="pc"><b>Плюс:</b> свежая игра, приятная механика «потяни и смотри». <b>Минус:</b> сложная физика мягкой губки, за несколько дней красиво не сделать, а механика понятна не с первой секунды.</p>
+    </div>
+  </div>
+
+  <div class="verdict">
+    <p>Мой совет: <strong>B «Спаси котика»</strong> как основной плейбл. Варианты для теста: A «Классика» как контроль и C «Выбери шар» как третий.</p>
+    <p>Так на собеседовании видно и умение сделать игру похожей на оригинал, и умение придумать новую гипотезу и её проверить. После твоего выбора обновлю research и перейду к этапу 2.</p>
+  </div>
+</section>
+
+<footer>Неофициальный концепт для собеседования. Stack Ball и Sponge Art — игры Azur Games, все права у правообладателя.</footer>
+</div>
+<script>
+  const frame = document.getElementById('game');
+  document.querySelectorAll('.switch button').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.switch button').forEach(x => x.classList.toggle('on', x === b));
+    frame.src = 'preview/?embed=1&mode=' + b.dataset.m;
+  }));
+</script>
+<script>
+  // In the public version the store screenshots are not published (they belong to Azur Games).
+  // If they are missing, hide the image blocks and point to the store page instead.
+  (function () {
+    const imgs = document.querySelectorAll('img[src^="refs/"]');
+    let hidden = false;
+    function hide() {
+      if (hidden) return; hidden = true;
+      document.querySelectorAll('.shots, .imgs').forEach((el) => { el.style.display = 'none'; });
+      const note = document.getElementById('refsNote');
+      if (note) {
+        note.textContent = 'Скриншоты игры принадлежат Azur Games и в публичную версию не входят. Их можно посмотреть на странице Stack Ball в ';
+        const a = document.createElement('a');
+        a.href = 'https://apps.apple.com/app/id1456732568'; a.textContent = 'App Store'; a.rel = 'noopener';
+        note.appendChild(a); note.appendChild(document.createTextNode('.'));
+      }
+    }
+    imgs.forEach((img) => { if (img.complete && img.naturalWidth === 0) hide(); img.addEventListener('error', hide); });
+  })();
+</script>
+</body>
+</html>

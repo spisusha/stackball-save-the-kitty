@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research: плейбл Stack Ball</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #ffffff;
+    --ink: #111111;
+    --grey: #5f5f5f;
+    --line: #e3e3e3;
+    --soft: #f6f6f4;
+    --signal: #ffd400;
+    --danger: #d83a2a;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Onest", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 96px; }
+
+  header.top {
+    border-bottom: 3px solid var(--ink);
+    padding: 40px 0 28px;
+    margin-bottom: 8px;
+  }
+  .stage {
+    display: inline-block;
+    background: var(--signal);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 4px 8px;
+  }
+  h1 {
+    font-weight: 900;
+    font-size: clamp(40px, 9vw, 84px);
+    line-height: .95;
+    letter-spacing: -.03em;
+    margin: 18px 0 16px;
+  }
+  .lead { font-size: 19px; color: var(--grey); max-width: 680px; margin: 0; }
+
+  section { padding: 44px 0 8px; border-bottom: 1px solid var(--line); }
+  section:last-of-type { border-bottom: 0; }
+  h2 {
+    font-weight: 900;
+    font-size: clamp(26px, 5vw, 36px);
+    letter-spacing: -.02em;
+    line-height: 1.1;
+    margin: 0 0 16px;
+  }
+  h3 { font-size: 19px; font-weight: 700; margin: 28px 0 8px; }
+  p { margin: 0 0 14px; max-width: 760px; }
+  .muted { color: var(--grey); }
+  .small { font-size: 14px; }
+  mark { background: var(--signal); color: var(--ink); padding: 0 3px; }
+  a { color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+  .verdict {
+    background: var(--ink);
+    color: #fff;
+    padding: 24px;
+    margin: 8px 0 18px;
+  }
+  .verdict p { max-width: none; }
+  .verdict strong { color: var(--signal); }
+  .verdict p:last-child { margin-bottom: 0; }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--ink);
+    border-left: 1px solid var(--line);
+    margin: 18px 0 20px;
+  }
+  .stat { padding: 16px 14px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .stat b { display: block; font-size: 30px; font-weight: 900; letter-spacing: -.02em; line-height: 1.1; }
+  .stat span { font-size: 14px; color: var(--grey); display: block; margin-top: 4px; }
+
+  .table { width: 100%; overflow-x: auto; margin: 12px 0 18px; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 620px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--grey); font-weight: 700; border-bottom: 1px solid var(--ink); }
+  td.num { font-weight: 700; white-space: nowrap; }
+  tr.pick td { background: #fff8cc; }
+  tr.pick td:first-child { box-shadow: inset 4px 0 0 var(--signal); padding-left: 10px; }
+  .yes { font-weight: 700; }
+  .no { color: var(--grey); }
+
+  .board { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin: 18px 0 8px; }
+  .frame { border: 1px solid var(--ink); background: var(--soft); }
+  .frame svg { display: block; width: 100%; height: auto; }
+  .frame .cap { padding: 10px; border-top: 1px solid var(--ink); background: #fff; font-size: 14px; line-height: 1.4; }
+  .frame .cap b { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+
+  .variants { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 1px solid var(--ink); margin: 16px 0 18px; }
+  .variant { padding: 18px 16px 18px 0; border-bottom: 1px solid var(--line); }
+  .variant + .variant { padding-left: 16px; border-left: 1px solid var(--line); }
+  .variant .tag { font-weight: 900; font-size: 34px; line-height: 1; }
+  .variant h3 { margin-top: 10px; }
+  .variant p { font-size: 15px; }
+
+  .note { border-left: 4px solid var(--signal); padding: 4px 0 4px 14px; margin: 16px 0; color: var(--grey); font-size: 15px; }
+
+  footer { padding-top: 32px; font-size: 14px; color: var(--grey); }
+
+  @media (max-width: 820px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .board { grid-template-columns: repeat(2, 1fr); }
+    .variants { grid-template-columns: 1fr; }
+    .variant + .variant { padding-left: 0; border-left: 0; }
+  }
+  @media (max-width: 420px) {
+    body { font-size: 16px; }
+    .stat b { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <span class="stage">Этап 1 из 5: research</span>
+  <h1>Плейбл для Stack&nbsp;Ball</h1>
+  <p class="lead">Неофициальный концепт для собеседования на позицию AI Game Designer в Azur Games. Я разобрал рекламу Azur и конкурентов и выбрал игру, механику и гипотезы для теста. Данные собраны 26 октября 2026 года.</p>
+  <p style="margin-top:16px"><a href="options.html"><b>Скриншоты игры, живое превью и четыре концепции</b></a></p>
+</header>
+
+<section>
+  <h2>Коротко</h2>
+  <div class="verdict">
+    <p>Делаю плейбл для <strong>Stack Ball</strong>. Это второй по загрузкам хит Azur (560 млн), и Azur рекламирует его прямо сейчас: 5 из 26 самых показываемых объявлений компании в Meta, запуск 28 сентября 2026. Механика укладывается в одно касание и 25 секунд. У самой Azur уже был опыт с плейблом этой игры: первая версия проиграла видео и выиграла только после доработки подсказок.</p>
+    <p>Гипотеза: плейбл с понятной подсказкой «держи», режимом огня и проигрышем в шаге от финиша даст больше установок на 1000 показов (IPM), чем плейбл, который заканчивается победой. Проверяю это тремя вариантами из одной базы.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Бриф</h2>
+  <p>Так выглядела бы задача от UA-команды, если бы я уже работал в отделе.</p>
+  <div class="table"><table>
+    <tr><th>Пункт</th><th>Значение</th></tr>
+    <tr><td>Игра</td><td>Stack Ball, Google Play <code>com.azurgames.stackball</code>, App Store id1456732568</td></tr>
+    <tr><td>Цель</td><td>Новый плейбл, который обгонит текущие видео по IPM при том же или лучшем удержании игроков</td></tr>
+    <tr><td>Сети</td><td>AppLovin, Unity LevelPlay, Google App campaigns, Meta</td></tr>
+    <tr><td>Формат</td><td>HTML5 до 5 МБ (цель до 2 МБ), вертикаль и горизонталь, без внешних запросов</td></tr>
+    <tr><td>Срок первой версии</td><td>Несколько дней вместо 2–4 недель у агентства, за счёт ИИ-инструментов</td></tr>
+    <tr><td>Как поймём, что получилось</td><td>IPM выше контрольного креатива, CTR и доля доигравших до конца не хуже, удержание D1 не падает</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>Почему Stack Ball</h2>
+  <p>Я сравнил игры, которые Azur рекламирует сейчас, и её крупнейшие хиты. Главный вопрос: можно ли за 25 секунд и одно касание показать, почему в это интересно играть.</p>
+  <div class="table"><table>
+    <tr><th>Игра</th><th>Масштаб</th><th>Реклама сейчас</th><th>Механика для плейбла</th><th>Сложность в HTML5</th></tr>
+    <tr class="pick"><td><b>Stack Ball</b></td><td>560 млн загрузок</td><td class="yes">Да, 5 из 26 топ-объявлений</td><td>Одно касание: держи, чтобы разбить; отпусти перед чёрным</td><td>Низкая</td></tr>
+    <tr><td>Worms Zone.io</td><td>600 млн загрузок</td><td class="no">В топе Meta не найдена</td><td>Свайпом управлять змейкой, есть и расти</td><td>Средняя, нужны соперники с ИИ</td></tr>
+    <tr><td>Стратегия «Get ready for battle»</td><td>Мидкор</td><td class="yes">Да, 11 из 26, лидер</td><td>Нанять и объединить войска, бой</td><td>Высокая, много арта и баланса</td></tr>
+    <tr><td>Sponge Art</td><td>Новинка</td><td class="yes">Да, 4 из 26</td><td>Водить губкой, раскрашивать</td><td>Средняя</td></tr>
+  </table></div>
+  <p>Стратегию Azur продвигает сильнее всего, но для первого демо она слишком тяжёлая: много графики, баланса и длинные видео до 3:40. Stack Ball лучше показывает главное, что ждут от роли: быстро собрать рабочий плейбл и проверить гипотезы. Механику стратегии я бы взял следующим шагом, если тема интересна команде.</p>
+</section>
+
+<section>
+  <h2>Что Azur крутит сейчас</h2>
+  <p>Источник: Meta Ad Library, страница Azur Games, активные объявления, сортировка по показам. Всего около 330 активных объявлений, ниже 26 самых показываемых.</p>
+  <div class="stats">
+    <div class="stat"><b>~330</b><span>активных объявлений Azur в Meta</span></div>
+    <div class="stat"><b>11 из 26</b><span>стратегия о найме и слиянии войск</span></div>
+    <div class="stat"><b>5 из 26</b><span>Stack Ball, запуск 28.09.2026</span></div>
+    <div class="stat"><b>13–30 с</b><span>длина видео казуальных игр</span></div>
+  </div>
+  <div class="table"><table>
+    <tr><th>Игра</th><th>В топ-26</th><th>Длина видео</th><th>Запуск</th><th>Что заметно</th></tr>
+    <tr><td>Стратегия «Get ready for battle»</td><td class="num">11</td><td>1:00 – 3:40</td><td>30.09 – 21.10</td><td>Длинные ролики с геймплеем, много версий текста</td></tr>
+    <tr class="pick"><td><b>Stack Ball</b></td><td class="num">5</td><td>0:13 – 0:30</td><td>28.09</td><td>Один геймплей на разных фото-фонах, заголовок «Best toilet game ever»</td></tr>
+    <tr><td>Sponge Art</td><td class="num">4</td><td>0:18 – 0:30</td><td>11.09</td><td>Короткие ролики про приятный процесс</td></tr>
+    <tr><td>Kingdom Clash</td><td class="num">3</td><td>0:45 – 2:00</td><td>12.10</td><td>Коллекция героев, мидкор</td></tr>
+    <tr><td>World War Heroes и танки</td><td class="num">2</td><td>0:50</td><td>25.09</td><td>Шутер, мидкор</td></tr>
+    <tr><td>Claw Master</td><td class="num">1</td><td>1:00</td><td>12.10</td><td>Текст «I was SO close!», приём «почти получилось»</td></tr>
+  </table></div>
+  <p class="note">Сам факт, что Azur в 2026 году тратит деньги на рекламу игры 2019 года, значит, что Stack Ball окупается на закупке трафика. Если бы не окупался, креативы бы не запускали.</p>
+</section>
+
+<section>
+  <h2>Разбор креатива Stack Ball</h2>
+  <p>Я разобрал по кадрам 30-секундное видео из объявления 2281165669336234 (запуск 28.09.2026, вертикаль 360×640).</p>
+  <div class="table"><table>
+    <tr><th>Секунда</th><th>Что на экране</th><th>Зачем это</th></tr>
+    <tr><td class="num">0–1</td><td>Жёлто-чёрная башня, шар сверху, полоска прогресса «48 → 49», на фоне настоящая фотография замка</td><td>Сразу видны цель (дойти до конца) и уровень, фото выделяется в ленте среди нарисованных игр</td></tr>
+    <tr><td class="num">5</td><td>Шар пробивает кольца, огненный след, осколки, красный круг показывает, где держат палец</td><td>Удовольствие от разрушения и подсказка управления без слов</td></tr>
+    <tr><td class="num">12–20</td><td>Цвет башни меняется на зелёный, растёт счёт, шар уходит всё ниже</td><td>Ощущение прогресса и разнообразия</td></tr>
+    <tr><td class="num">28–30</td><td>Новая башня, шар снова сверху</td><td>Цикл бесконечный, можно играть ещё</td></tr>
+  </table></div>
+  <p>Ещё два приёма. Варианты отличаются только фоном (замок, поле цветов), поэтому вариации получаются почти бесплатно. А заголовок «Best toilet game ever» шутливо и честно говорит, когда в это играют: пару минут, когда нечем заняться.</p>
+</section>
+
+<section>
+  <h2>Конкурент: Helix Jump</h2>
+  <p>Helix Jump от Voodoo — оригинал жанра, Stack Ball построен на обратной механике: там шар падает в щели, здесь пробивает кольца. В Meta сейчас около 220 активных объявлений по запросу «helix jump».</p>
+  <div class="stats">
+    <div class="stat"><b>~220</b><span>активных объявлений</span></div>
+    <div class="stat"><b>28.10.2025</b><span>старт самых показываемых</span></div>
+    <div class="stat"><b>~1 год</b><span>лидеры крутятся без замены</span></div>
+    <div class="stat"><b>0:30</b><span>основная длина видео</span></div>
+  </div>
+  <p>Главный вывод: самые показываемые объявления Helix Jump запущены <mark>почти год назад и до сих пор активны</mark>. Сервисы не показывают чужие установки, но креатив, который год крутится в рекламе, почти наверняка окупается. Что в нём: чистый геймплей, огромный счёт сверху (3811, 5328) и варианты, где меняется только цвет башни. Счёт и прогресс я беру в свой плейбл.</p>
+</section>
+
+<section>
+  <h2>Урок из истории самой Azur</h2>
+  <p>Есть официальный кейс ironSource (сейчас Unity) о плейбле Stack Ball. Игра вышла в апреле 2019, сначала её продвигали только видео. Первый простой плейбл показывал геймплей и давал пройти пару уровней, но <mark>проигрывал видео в нескольких сетях</mark>.</p>
+  <p>Студия Playworks посмотрела метрики внутри рекламы и предложила четыре правки: затемнение экрана с подсказкой, анимированную стрелку «нажми сюда», классический шар в цветах башни и шар, который разлетается при проигрыше. Анимированные стрелки, по их данным, особенно хорошо работают в гиперказуальных играх. На всё ушла неделя.</p>
+  <p class="note">В выдаче поиска кейс сообщает о росте IPM на 60% и росте объёма закупки в 10 раз. Сама страница кейса сейчас перенаправляет на общий раздел Unity, поэтому цифры я перепроверить не смог. Правки и их порядок подтверждаются несколькими источниками.</p>
+  <p>Что это значит для меня: важна не только механика. Подсказка в первые секунды и красивый проигрыш решают, будет ли плейбл лучше видео. Обе вещи заложены в мою раскадровку.</p>
+</section>
+
+<section>
+  <h2>Рынок и формат</h2>
+  <div class="stats">
+    <div class="stat"><b>6% → 13%</b><span>доля плейблов в игровых креативах за 2025 (Sensor Tower)</span></div>
+    <div class="stat"><b>×8</b><span>конверсия показа в установку у плейблов крупных рекламодателей (Liftoff)</span></div>
+    <div class="stat"><b>~5%</b><span>креативов становятся победителями</span></div>
+    <div class="stat"><b>$3–5 тыс.</b><span>и 2–4 недели стоит плейбл у агентства</span></div>
+  </div>
+  <p>Топ-рекламодатели игр выпускают 2400–2600 вариантов креативов в квартал на одно приложение. Если побеждает примерно каждый двадцатый, выигрывает тот, кто быстро и дёшево делает много вариантов. Поэтому вакансия и требует ИИ-инструменты: они сокращают дни до часов.</p>
+  <p class="muted small">Цифры из отраслевых отчётов и блогов, у разных источников они расходятся. Использую их как ориентир, а не как норму.</p>
+</section>
+
+<section>
+  <h2>Раскадровка</h2>
+  <p>Около 25 секунд от первого касания до финала. Таймер начинается только после первого касания (требование AppLovin).</p>
+
+  <div class="board">
+    <div class="frame">
+      <svg viewBox="0 0 120 200" aria-label="Хук">
+        <rect width="120" height="200" fill="#dfe6ea"/>
+        <g transform="translate(60 0)">
+          <rect x="-12" y="40" width="24" height="150" fill="#111"/>
+          <g fill="#ffd400"><rect x="-38" y="60" width="76" height="12"/><rect x="-38" y="84" width="76" height="12"/><rect x="-38" y="108" width="76" height="12"/><rect x="-38" y="132" width="76" height="12"/><rect x="-38" y="156" width="76" height="12"/></g>
+          <circle cy="48" r="8" fill="#2a7fff"/>
+        </g>
+        <rect width="120" height="200" fill="#000" opacity=".45"/>
+        <circle cx="60" cy="120" r="16" fill="none" stroke="#fff" stroke-width="2.5"/>
+        <path d="M66 128 l0 -14 a4 4 0 0 1 8 0 l0 10 l4 1 a5 5 0 0 1 4 6 l-2 12 l-14 0 l-7 -9 a3 3 0 0 1 5 -4 z" fill="#fff"/>
+        <text x="60" y="172" fill="#fff" font-family="Onest, sans-serif" font-size="10" font-weight="700" text-anchor="middle">ДЕРЖИ</text>
+      </svg>
+      <div class="cap"><b>Хук, 0–2 с</b>Затемнение, рука и слово «Держи». Подсказка из кейса Playworks.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 120 200" aria-label="Первый кайф">
+        <rect width="120" height="200" fill="#dfe6ea"/>
+        <rect x="20" y="10" width="80" height="6" fill="#fff"/><rect x="20" y="10" width="34" height="6" fill="#111"/>
+        <g transform="translate(60 0)">
+          <rect x="-12" y="40" width="24" height="150" fill="#111"/>
+          <g fill="#ffd400"><rect x="-38" y="108" width="76" height="12"/><rect x="-38" y="132" width="76" height="12"/><rect x="-38" y="156" width="76" height="12"/></g>
+          <g fill="#ffd400"><rect x="-50" y="86" width="14" height="6" transform="rotate(-20 -43 89)"/><rect x="34" y="80" width="16" height="6" transform="rotate(25 42 83)"/><rect x="-30" y="72" width="10" height="5"/><rect x="22" y="70" width="10" height="5"/></g>
+          <path d="M0 60 L-6 92 L0 98 L6 92 Z" fill="#ff7a00" opacity=".85"/>
+          <circle cy="98" r="8" fill="#2a7fff"/>
+        </g>
+        <text x="60" y="34" fill="#111" font-family="Onest, sans-serif" font-size="12" font-weight="900" text-anchor="middle">+120</text>
+      </svg>
+      <div class="cap"><b>Кайф, 2–10 с</b>Кольца разлетаются, счёт растёт. Чёрных секторов ещё нет, проиграть нельзя.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 120 200" aria-label="Риск и огонь">
+        <rect width="120" height="200" fill="#dfe6ea"/>
+        <rect x="20" y="10" width="80" height="6" fill="#fff"/><rect x="20" y="10" width="62" height="6" fill="#111"/>
+        <g transform="translate(60 0)">
+          <rect x="-12" y="40" width="24" height="150" fill="#111"/>
+          <rect x="-38" y="108" width="76" height="12" fill="#ffd400"/>
+          <rect x="-38" y="132" width="40" height="12" fill="#ffd400"/><rect x="2" y="132" width="36" height="12" fill="#111"/>
+          <rect x="-38" y="156" width="76" height="12" fill="#ffd400"/>
+          <circle cy="92" r="16" fill="#ff7a00" opacity=".35"/>
+          <circle cy="92" r="9" fill="#ff7a00"/>
+        </g>
+        <text x="60" y="38" fill="#d83a2a" font-family="Onest, sans-serif" font-size="11" font-weight="900" text-anchor="middle">ОГОНЬ!</text>
+      </svg>
+      <div class="cap"><b>Риск, 10–18 с</b>Появляются чёрные сектора. После 8 колец подряд режим огня, шар неуязвим.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 120 200" aria-label="Развязка">
+        <rect width="120" height="200" fill="#dfe6ea"/>
+        <rect x="20" y="10" width="80" height="6" fill="#fff"/><rect x="20" y="10" width="72" height="6" fill="#d83a2a"/>
+        <g transform="translate(60 0)">
+          <rect x="-12" y="40" width="24" height="150" fill="#111"/>
+          <rect x="-38" y="132" width="76" height="12" fill="#111"/>
+          <rect x="-38" y="156" width="76" height="12" fill="#ffd400"/>
+          <g fill="#2a7fff"><circle cx="-14" cy="118" r="3"/><circle cx="12" cy="114" r="4"/><circle cx="-4" cy="108" r="2.5"/><circle cx="20" cy="124" r="2.5"/><circle cx="-22" cy="126" r="2"/></g>
+        </g>
+        <rect x="16" y="54" width="88" height="38" fill="#fff"/>
+        <text x="60" y="68" fill="#111" font-family="Onest, sans-serif" font-size="12" font-weight="900" text-anchor="middle">ТАК БЛИЗКО!</text>
+        <text x="60" y="84" fill="#111" font-family="Onest, sans-serif" font-size="10" font-weight="700" text-anchor="middle">90%</text>
+      </svg>
+      <div class="cap"><b>Развязка, 18–25 с</b>Победа или проигрыш в шаге от финиша, шар разлетается. Зависит от варианта.</div>
+    </div>
+    <div class="frame">
+      <svg viewBox="0 0 120 200" aria-label="End card">
+        <rect width="120" height="200" fill="#111"/>
+        <rect x="38" y="44" width="44" height="44" rx="10" fill="#ffd400"/>
+        <circle cx="60" cy="58" r="6" fill="#2a7fff"/>
+        <rect x="48" y="68" width="24" height="5" fill="#111"/><rect x="48" y="76" width="24" height="5" fill="#111"/>
+        <text x="60" y="110" fill="#fff" font-family="Onest, sans-serif" font-size="13" font-weight="900" text-anchor="middle">Stack Ball</text>
+        <rect x="22" y="128" width="76" height="24" fill="#ffd400"/>
+        <text x="60" y="144" fill="#111" font-family="Onest, sans-serif" font-size="10" font-weight="900" text-anchor="middle">ИГРАТЬ</text>
+        <text x="60" y="172" fill="#bbb" font-family="Onest, sans-serif" font-size="9" text-anchor="middle">Ещё раз</text>
+      </svg>
+      <div class="cap"><b>End card</b>Иконка, название, кнопка в магазин и «Ещё раз». Кнопка открывает стор через MRAID.</div>
+    </div>
+  </div>
+  <p class="muted small">Схемы условные: показывают порядок экранов, а не финальную графику. Если игрок 5 секунд ничего не делает, подсказка появляется снова. Через 30 секунд end card показывается в любом случае.</p>
+</section>
+
+<section>
+  <h2>Три варианта для теста</h2>
+  <p>Все варианты собираются из одной базы, и в каждом меняется только одна вещь. Иначе непонятно, что именно повлияло на результат.</p>
+  <div class="variants">
+    <div class="variant">
+      <div class="tag">A</div>
+      <h3>Победа</h3>
+      <p>Контрольный вариант. Два уровня, режим огня, финиш с конфетти, потом end card.</p>
+      <p class="muted">Нужен как точка отсчёта.</p>
+    </div>
+    <div class="variant">
+      <div class="tag">B</div>
+      <h3>Почти прошёл</h3>
+      <p>Всё как в A, но на 90% второго уровня шар врезается в чёрное кольцо и разлетается: «Так близко!».</p>
+      <p class="muted">Почему: Azur прямо сейчас использует приём «I was SO close!» в Claw Master, а разлетающийся шар помог в кейсе Playworks. Ожидаю рост CTR: хочется доиграть.</p>
+    </div>
+    <div class="variant">
+      <div class="tag">C</div>
+      <h3>Фото-фон</h3>
+      <p>Всё как в A, но за башней фотография вместо ровного фона.</p>
+      <p class="muted">Почему: так сделаны текущие видео Stack Ball у Azur. Проверяем, помогает ли контрастный фон и в плейбле.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Метрики и как выбрать победителя</h2>
+  <p>Внутри плейбла расставлю события, чтобы видеть воронку по шагам. Цифры показов, кликов и установок придут из кабинетов рекламных сетей, а удержание и окупаемость из AppsFlyer или Adjust.</p>
+  <div class="table"><table>
+    <tr><th>Событие внутри плейбла</th><th>Что показывает</th></tr>
+    <tr><td><code>loaded</code></td><td>Плейбл загрузился, от этого считаем всю воронку</td></tr>
+    <tr><td><code>first_touch</code> и время до него</td><td>Engagement: поняли ли люди, что делать. Если время большое, подсказка плохая</td></tr>
+    <tr><td><code>rings_10</code>, <code>fire_mode</code></td><td>Дошли ли до «кайфа» и до режима огня</td></tr>
+    <tr><td><code>black_hit</code>, <code>level_complete</code></td><td>Где проигрывают и сколько доходят до финала</td></tr>
+    <tr><td><code>endcard_shown</code></td><td>Completion: сколько людей досмотрели до конца</td></tr>
+    <tr><td><code>cta_click</code>, <code>retry_click</code></td><td>CTR и интерес «сыграть ещё»</td></tr>
+  </table></div>
+  <p><b>Как решаю.</b> Все три варианта получают одинаковый бюджет, пока у каждого не наберётся достаточно установок, чтобы разница не была случайной. Порог обычно задаёт UA-команда, например от 100 установок на вариант. Главная метрика — IPM. Если у варианта IPM выше, но удержание D1 заметно ниже, значит, креатив обещает не ту игру, и такой вариант я не считаю победителем. Победителя развиваю дальше и меняю в нём следующую одну вещь.</p>
+</section>
+
+<section>
+  <h2>Технические требования</h2>
+  <div class="table"><table>
+    <tr><th>Сеть</th><th>Размер</th><th>Формат</th><th>Кнопка в магазин</th></tr>
+    <tr><td>AppLovin</td><td>5 МБ</td><td>Один HTML, всё внутри</td><td>MRAID, таймер после первого касания</td></tr>
+    <tr><td>Unity LevelPlay</td><td>до 5 МБ</td><td>Один index.html</td><td><code>mraid.open()</code>, MRAID 3.0</td></tr>
+    <tr><td>Google App campaigns</td><td>5 МБ</td><td>ZIP, до 512 файлов</td><td>Свой формат, внешние библиотеки только от Google</td></tr>
+    <tr><td>Meta</td><td>HTML до 2 МБ</td><td>Один HTML</td><td><code>FbPlayableAd.onCTAClick()</code>, без внешних запросов</td></tr>
+  </table></div>
+  <p>Общие правила для всех: звук только после первого касания, нельзя уводить в магазин с первого касания, нужно работать и в вертикали, и в горизонтали. Собираю одну базу и отдельные сборки под каждую сеть. Цель по размеру — до 2 МБ, чтобы подходило везде.</p>
+</section>
+
+<section>
+  <h2>Источники и ограничения</h2>
+  <p>Я пользовался только бесплатными источниками: Meta Ad Library (живые объявления Azur и Helix Jump), открытые кейсы ironSource и AppLovin, отраслевые блоги и требования сетей. TikTok Creative Center без входа в аккаунт показывает только заглушку, поэтому TikTok в разборе нет.</p>
+  <p>В работе я бы дополнительно проверил в AppMagic динамику загрузок Stack Ball за 2026 год по странам, в Sensor Tower — в каких сетях Stack Ball и Helix Jump тратят больше всего и какая у них доля плейблов, а в SocialPeta — сами плейблы конкурентов, чтобы сыграть в них и разобрать механику.</p>
+  <p class="muted small">Источники: <a href="https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=ALL&search_type=page&view_all_page_id=1238173096287495">Meta Ad Library, Azur Games</a>, <a href="https://www.is.com/case-studies/stack-ball-3d/">кейс ironSource о Stack Ball 3D</a>, <a href="https://azurgames.com/blog/sensor-tower-summarizes-2024-azur-games-ranks-1-in-downloads-among-game-publishers">блог Azur Games</a>, <a href="https://www.ludaxis.io/blog/playable-ads-2026">Ludaxis, Playable ads in 2026</a>, <a href="https://www.sett.ai/content/playable-ad-networks/">Sett, требования сетей</a>, <a href="https://segwise.ai/blog/understanding-playable-ads-guide">Segwise, гайд по плейблам</a>, <a href="https://www.applovin.com/success-stories/azur-games/">AppLovin, кейс Azur Games</a>.</p>
+</section>
+
+<section>
+  <h2>Дальше</h2>
+  <p>Этап 2 — рабочий прототип варианта A: башня, шар, управление одним касанием, режим огня, end card и события. Потом этап 3 — графика и звук, этап 4 — варианты B и C, этап 5 — сборки под сети, ссылка для телефона, видео и репозиторий.</p>
+</section>
+
+<footer>Неофициальный концепт, сделан для собеседования. Stack Ball — игра Azur Games, все права у правообладателя.</footer>
+
+</div>
+</body>
+</html>

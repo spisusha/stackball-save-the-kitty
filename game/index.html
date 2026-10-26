@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Stack Ball: Save the Kitty</title>
+</head>
+<body>
+<div id="hud">
+  <div class="bar">
+    <div class="lvl" id="lvlA">48</div>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="lvl" id="lvlB">
+      <svg class="catface" viewBox="0 0 40 40" aria-hidden="true"><path d="M7 16 9 4l9 7zM33 16 31 4l-9 7z" fill="#ff9a3c"/><circle cx="20" cy="22" r="13" fill="#ff9a3c"/><ellipse cx="20" cy="27" rx="6" ry="4" fill="#fff3e0"/><circle cx="15" cy="20" r="2.4" fill="#222"/><circle cx="25" cy="20" r="2.4" fill="#222"/><path d="M18 24.5h4l-2 2.2z" fill="#ff6b8a"/></svg>
+      <span class="num" id="lvlBnum">49</span>
+    </div>
+  </div>
+  <div id="score">0</div>
+  <div id="goal" data-t="goal"></div>
+  <div id="firebar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c2 4 6 6 6 12a6 6 0 0 1-12 0c0-3 1.5-5 3-6 0 2 1 3.5 2 4-.5-4 0-7 1-10z" fill="#ff7a00"/></svg><div class="ft"><div class="ff" id="firefill"></div></div></div>
+</div>
+
+<button id="mute" aria-label="Sound">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="#fff"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/><path class="cross" d="M16 9l6 6M22 9l-6 6" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+</button>
+
+<div id="banner" data-t="save"></div>
+<div id="danger"></div>
+<div id="combo"></div>
+<div id="fire" data-t="fire"></div>
+<div id="help" data-t="help"></div>
+<div id="hearts"></div>
+
+<div id="hint">
+  <div class="tap"><div class="ring"></div>
+    <svg class="hand" viewBox="0 0 64 64" aria-hidden="true"><path d="M24 30V10a5 5 0 0 1 10 0v16l3-1a5 5 0 0 1 6 2l1 1 3-1a5 5 0 0 1 6 3l1 2h1a5 5 0 0 1 6 5l-2 14c-1 6-6 11-12 11H33c-3 0-6-2-8-4L13 44a5 5 0 0 1 7-7z" fill="#fff" stroke="#222" stroke-width="2"/></svg>
+  </div>
+  <b data-t="hold"></b>
+</div>
+
+<div id="ghost">
+  <div class="tap"><div class="ring"></div>
+    <svg class="hand" viewBox="0 0 64 64" aria-hidden="true"><path d="M24 30V10a5 5 0 0 1 10 0v16l3-1a5 5 0 0 1 6 2l1 1 3-1a5 5 0 0 1 6 3l1 2h1a5 5 0 0 1 6 5l-2 14c-1 6-6 11-12 11H33c-3 0-6-2-8-4L13 44a5 5 0 0 1 7-7z" fill="#fff" stroke="#222" stroke-width="2"/></svg>
+  </div>
+  <b data-t="watch"></b>
+</div>
+
+<div id="pick">
+  <h2 data-t="chooseBall"></h2>
+  <div class="balls">
+    <button data-ball="meteor">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="22" fill="#c8432b"/><circle cx="24" cy="26" r="6" fill="#8f2a17"/><circle cx="40" cy="38" r="7" fill="#8f2a17"/><circle cx="38" cy="22" r="3.5" fill="#8f2a17"/><circle cx="25" cy="42" r="3" fill="#8f2a17"/><circle cx="22" cy="20" r="3" fill="#fff" opacity=".35"/></svg>
+      <b data-t="meteor"></b><span data-t="meteorPerk"></span>
+    </button>
+    <button data-ball="rocket">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M26 46c-2 6 0 10 6 14 6-4 8-8 6-14z" fill="#ff9a3c"/><path d="M32 4c9 8 12 20 10 36H22C20 24 23 12 32 4z" fill="#e9eef4" stroke="#9aa6b2" stroke-width="1.5"/><path d="M32 4c4 3 7 8 8 13H24c1-5 4-10 8-13z" fill="#e0352b"/><circle cx="32" cy="27" r="5" fill="#2a7fff" stroke="#9aa6b2" stroke-width="1.5"/><path d="M22 32l-8 12h9zM42 32l8 12h-9z" fill="#e0352b"/></svg>
+      <b data-t="rocket"></b><span data-t="rocketPerk"></span>
+    </button>
+    <button data-ball="fire">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4c4 10 14 14 14 28a14 14 0 0 1-28 0c0-6 3-10 6-13 0 5 2 8 4 9-1-10 2-17 4-24z" fill="#ffb000"/><circle cx="32" cy="40" r="16" fill="#ff7a00"/><circle cx="26" cy="34" r="4" fill="#fff" opacity=".4"/></svg>
+      <b data-t="fireball"></b><span data-t="firePerk"></span>
+    </button>
+  </div>
+</div>
+
+<div id="result">
+  <h2 id="resTitle"></h2>
+  <p id="resText"></p>
+  <button id="retry" class="btn" data-t="tryAgain"></button>
+</div>
+
+<div id="endcard">
+  <div class="ec">
+    <div class="ec-badge" id="ecBadge">
+      <svg class="catface" viewBox="0 0 40 40" aria-hidden="true"><path d="M7 16 9 4l9 7zM33 16 31 4l-9 7z" fill="#ff9a3c"/><circle cx="20" cy="22" r="13" fill="#ff9a3c"/><ellipse cx="20" cy="27" rx="6" ry="4" fill="#fff3e0"/><circle cx="15" cy="20" r="2.4" fill="#222"/><circle cx="25" cy="20" r="2.4" fill="#222"/><path d="M18 24.5h4l-2 2.2z" fill="#ff6b8a"/></svg>
+      <span id="ecBadgeText"></span>
+    </div>
+    <svg class="ec-icon" viewBox="0 0 120 120" aria-hidden="true">
+      <defs><linearGradient id="icg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a3cb8"/><stop offset="1" stop-color="#ff6a3d"/></linearGradient></defs>
+      <rect width="120" height="120" rx="27" fill="url(#icg)"/>
+      <rect x="53" y="10" width="14" height="100" fill="#fff"/>
+      <g fill="#ffd400"><rect x="18" y="52" width="84" height="12" rx="3"/><rect x="18" y="70" width="84" height="12" rx="3"/><rect x="18" y="88" width="84" height="12" rx="3"/></g>
+      <rect x="70" y="70" width="32" height="12" rx="3" fill="#1d1d22"/>
+      <path d="M60 18 54 40h12z" fill="#ff9a3c" opacity=".85"/>
+      <circle cx="60" cy="40" r="10" fill="#2a7fff"/><circle cx="56" cy="36" r="3" fill="#fff" opacity=".7"/>
+    </svg>
+    <h2 class="ec-title">Stack Ball</h2>
+    <p class="ec-sub" id="ecSub"></p>
+    <button id="play" class="btn big" data-t="play"></button>
+    <button id="replay" class="link" data-t="replay"></button>
+    <p class="ec-note" data-t="concept"></p>
+  </div>
+</div>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
