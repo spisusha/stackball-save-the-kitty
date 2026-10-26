@@ -53,7 +53,7 @@ const ui = {
   hint: $('hint'), result: $('result'), resTitle: $('resTitle'), resText: $('resText'), retry: $('retry'),
   end: $('endcard'), ecSub: $('ecSub'), ecBadge: $('ecBadge'), ecBadgeText: $('ecBadgeText'),
   play: $('play'), replay: $('replay'), mute: $('mute'), pick: $('pick'), ghost: $('ghost'),
-  fireBar: $('firebar'), fireFill: $('firefill'),
+  fireBar: $('firebar'), fireFill: $('firefill'), lost: $('lost'),
 };
 
 // ---------- Renderer, scene, camera ----------
@@ -185,9 +185,20 @@ const ringTop = (i) => -i * GAP + H;
 const baseY = () => -N * GAP - 0.05;
 const lvl = () => LEVELS[level % LEVELS.length];
 
+// Free GPU memory of objects built for the previous attempt (shared ring geometry and cached materials are kept)
+const sharedGeos = new Set(segGeos);
+function disposeTree(obj) {
+  obj.traverse((o) => {
+    if (o.geometry && !sharedGeos.has(o.geometry)) o.geometry.dispose();
+    const mats = Array.isArray(o.material) ? o.material : o.material ? [o.material] : [];
+    mats.forEach((m) => { if (![...matCache.values()].includes(m)) m.dispose(); });
+  });
+}
+
 function buildLevel() {
-  if (tower) scene.remove(tower);
-  [base, lid, cage, cat].forEach((o) => o && scene.remove(o));
+  if (tower) { scene.remove(tower); disposeTree(tower); }
+  [base, lid, cage, cat].forEach((o) => { if (o) { scene.remove(o); disposeTree(o); } });
+  if (scene.background && scene.background.dispose) scene.background.dispose();
   flying.forEach((f) => f.m.parent && f.m.parent.remove(f.m)); flying = [];
   lid = cage = cat = null;
   const L = lvl();
@@ -401,7 +412,8 @@ function fail(reason) {
     ui.danger.style.opacity = 0;
     if (fails >= MAX_FAILS) { showEnd('fails'); return; }
     ui.resTitle.textContent = t('soClose');
-    ui.resText.textContent = (reason === 'spikes' ? t('spikes') : t('black')) + '. ' + t('progress', { p: progress });
+    const why = reason === 'spikes' ? t('spikes') : t('black');
+    ui.resText.textContent = why + (/[.!?]$/.test(why) ? ' ' : '. ') + t('progress', { p: progress });
     ui.result.classList.add('on');
   }, 700);
 }
@@ -485,8 +497,14 @@ ui.end.addEventListener('click', () => { track('cta_click', { where: 'card' }); 
 ui.pick.querySelectorAll('button[data-ball]').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); pickBall(b.dataset.ball); }));
 ui.mute.addEventListener('click', (e) => { e.stopPropagation(); unlockAudio(); setMuted(!isMuted()); ui.mute.classList.toggle('off', isMuted()); });
 
-let paused = false;
-onVisibility((visible) => { paused = !visible; if (visible) { resumeAudio(); clock.getDelta(); } else { pauseAudio(); onUp(); } });
+// Hidden page: the browser stops animation frames by itself. Here we only handle sound and the finger.
+// (Earlier a "paused" flag waited for a "visible again" signal; on some phones that signal never came
+// and the game stayed frozen. Now pausing is decided every frame from document.hidden.)
+onVisibility((visible) => { if (visible) { resumeAudio(); clock.getDelta(); } else { pauseAudio(); onUp(); } });
+
+// If the phone drops the 3D context (low memory), show a restart button instead of a frozen picture
+renderer.domElement.addEventListener('webglcontextlost', (e) => { e.preventDefault(); ui.lost.classList.add('on'); track('error', { kind: 'webgl_lost' }); });
+ui.lost.addEventListener('click', () => location.reload());
 
 function resize() {
   const w = innerWidth, h = innerHeight;
@@ -676,11 +694,16 @@ function update(dt) {
   if (comboTimer > 0) { comboTimer -= dt; if (comboTimer <= 0) ui.combo.style.opacity = 0; }
 }
 
+let loopErrors = 0;
 function loop() {
+  requestAnimationFrame(loop); // schedule first, so one bad frame can never stop the game
   const dt = Math.min(clock.getDelta(), 0.033);
-  if (!paused && !window.__pause && phase !== 'boot') update(dt);
-  renderer.render(scene, camera);
-  requestAnimationFrame(loop);
+  try {
+    if (!document.hidden && !window.__pause && phase !== 'boot') update(dt);
+    renderer.render(scene, camera);
+  } catch (err) {
+    if (loopErrors++ < 3) { console.error(err); track('error', { kind: 'frame', message: String(err && err.message).slice(0, 80) }); }
+  }
 }
 
 // Debug helpers for automated checks (no effect on normal play)

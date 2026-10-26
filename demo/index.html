@@ -27,6 +27,25 @@
   .phone { width: 360px; height: 720px; border: 10px solid var(--ink); border-radius: 36px; overflow: hidden; background: #000; position: sticky; top: 16px; }
   .phone iframe { width: 100%; height: 100%; border: 0; display: block; }
 
+  /* Full screen game: the frame grows over the whole page and the page behind stays still */
+  html.locked, html.locked body { overflow: hidden; overscroll-behavior: none; }
+  .phone.full { position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; border: 0; border-radius: 0; margin: 0; z-index: 50; touch-action: none; }
+  .back { display: none; position: absolute; z-index: 2; top: 62px; left: 10px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(0,0,0,.4); color: #fff; place-items: center; padding: 0; cursor: pointer; }
+  .back svg { width: 22px; height: 22px; }
+  .phone.full .back { display: grid; }
+
+  /* On phones the game is opened full screen from a cover, never played inside the page */
+  .cover { display: none; position: absolute; inset: 0; width: 100%; border: 0; padding: 20px 16px; font: inherit; color: #fff; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: linear-gradient(180deg, #7a3cb8, #ff6a3d); }
+  .cover svg { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 8px 24px rgba(0,0,0,.3); }
+  .cover b { margin-top: 14px; font-size: 24px; font-weight: 900; line-height: 1.1; }
+  .cover .go { margin-top: 18px; background: var(--signal); color: var(--ink); font-weight: 900; font-size: 20px; padding: 13px 40px; border-radius: 14px; box-shadow: 0 5px 0 #b39500; }
+  .cover small { margin-top: 14px; font-size: 14px; opacity: .9; }
+  html.touch .phone:not(.full) { height: 340px; }
+  html.touch .phone:not(.full) iframe { display: none; }
+  html.touch .phone:not(.full) .cover { display: flex; }
+  html.touch .restart { display: none; }
+  .wide { margin-left: 8px; }
+
   .ctrl { margin-bottom: 18px; }
   .ctrl .label { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--grey); font-weight: 700; margin-bottom: 6px; }
   .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--ink); }
@@ -55,7 +74,7 @@
 
   @media (max-width: 860px) {
     .layout { grid-template-columns: 1fr; gap: 24px; }
-    .phone { position: static; width: min(360px, 100%); height: 640px; margin: 0 auto; }
+    .phone { position: relative; top: 0; width: min(360px, 100%); height: 640px; margin: 0 auto; }
     .frow { grid-template-columns: 130px 1fr 36px; }
   }
 </style>
@@ -69,7 +88,16 @@
 </header>
 
 <div class="layout">
-  <div class="phone"><iframe id="game" title="Плейбл" allow="autoplay"></iframe></div>
+  <div class="phone" id="phone">
+    <iframe id="game" title="Плейбл" allow="autoplay"></iframe>
+    <button class="cover" id="cover">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><defs><linearGradient id="icg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a3cb8"/><stop offset="1" stop-color="#ff6a3d"/></linearGradient></defs><rect width="120" height="120" rx="27" fill="url(#icg)"/><rect x="53" y="10" width="14" height="100" fill="#fff"/><g fill="#ffd400"><rect x="18" y="52" width="84" height="12" rx="3"/><rect x="18" y="70" width="84" height="12" rx="3"/><rect x="18" y="88" width="84" height="12" rx="3"/></g><rect x="70" y="70" width="32" height="12" rx="3" fill="#1d1d22"/><circle cx="60" cy="40" r="10" fill="#2a7fff"/></svg>
+      <b>Спаси котика</b>
+      <span class="go">Играть</span>
+      <small id="coverNote"></small>
+    </button>
+    <button class="back" id="back" aria-label="Назад"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </div>
 
   <div>
     <div class="ctrl">
@@ -93,7 +121,7 @@
         <button data-v="en">English</button>
         <button data-v="ru">Русский</button>
       </div>
-      <button class="restart" id="restart" style="margin-left:8px">Перезапустить</button>
+      <button class="restart" id="restart" style="margin-left:8px">Перезапустить</button><button class="restart wide" id="wide">На весь экран</button>
     </div>
 
     <h2>Что проверяет каждый вариант</h2>
@@ -133,7 +161,7 @@
   const HOT = new Set(['first_touch', 'endcard_shown', 'cta_click']);
   const counts = {};
   const state = { variant: 'rescue', demo: '0', lang: 'en' };
-  const frame = document.getElementById('game');
+  let frame = document.getElementById('game');
   const funnel = document.getElementById('funnel');
   const log = document.getElementById('log');
 
@@ -157,14 +185,60 @@
   }
   render();
 
+  // Phones: a finger on the game would scroll or zoom the page, so the game is not played inside it.
+  // A cover opens the game over the whole screen, with a back button. Computers keep the phone frame.
+  const touch = matchMedia('(pointer: coarse)').matches;
+  document.documentElement.classList.toggle('touch', touch);
+  const phone = document.getElementById('phone');
+  const viewport = document.querySelector('meta[name=viewport]');
+  const VIEWPORT = viewport.content;
+  let full = false;
+
+  function openFull() {
+    if (full) return;
+    full = true;
+    viewport.content = VIEWPORT + ', maximum-scale=1, user-scalable=no'; // undo page zoom while playing
+    document.documentElement.classList.add('locked');
+    phone.classList.add('full');
+    history.pushState({ game: 1 }, '');
+    if (touch) load();
+    if (phone.requestFullscreen) phone.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+  }
+  function closeFull() {
+    if (!full) return;
+    full = false;
+    viewport.content = VIEWPORT;
+    document.documentElement.classList.remove('locked');
+    phone.classList.remove('full');
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    if (touch) go(''); // free the phone's memory, the cover is back
+  }
+  // Every load gets a fresh frame. Navigating the old one would add a step to the browser
+  // history, and "back" would first show its previous page (a black screen) instead of closing the game
+  function go(url) {
+    const f = document.createElement('iframe');
+    f.id = 'game'; f.title = 'Плейбл'; f.allow = 'autoplay';
+    if (url) f.src = url;
+    frame.replaceWith(f); frame = f;
+  }
+  // Back button, the phone's own back and Esc all close the game the same way
+  document.getElementById('back').addEventListener('click', () => history.back());
+  addEventListener('popstate', closeFull);
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && full) history.back(); });
+  document.getElementById('cover').addEventListener('click', openFull);
+  document.getElementById('wide').addEventListener('click', openFull);
+
   function load() {
     const q = new URLSearchParams({ variant: state.variant, lang: state.lang });
     if (state.demo === '1') q.set('demo', '1');
-    frame.src = '../index.html?' + q.toString();
     document.querySelectorAll('tr[data-row]').forEach((tr) => {
       const v = tr.dataset.row;
       tr.classList.toggle('on', v === state.variant || (v === 'demo' && state.demo === '1'));
     });
+    const label = (key) => document.querySelector('.seg[data-key="' + key + '"] button.on').textContent;
+    document.getElementById('coverNote').textContent = label('variant') + (state.demo === '1' ? ', с показом' : '') + ', ' + label('lang');
+    if (touch && !full) return; // on phones the game loads only when opened full screen
+    go('../index.html?' + q.toString());
   }
   document.querySelectorAll('.seg').forEach((seg) => {
     const key = seg.dataset.key;

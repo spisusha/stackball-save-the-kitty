@@ -24,8 +24,22 @@
   .btn:active { transform: translateY(2px); }
   .links { margin-top: 18px; font-size: 15px; }
   .links a { color: var(--ink); text-underline-offset: 3px; margin-right: 16px; }
-  .phone { width: 360px; height: 720px; border: 10px solid var(--ink); border-radius: 36px; overflow: hidden; background: #2b1b3d; }
+  .phone { width: 360px; height: 720px; border: 10px solid var(--ink); border-radius: 36px; overflow: hidden; background: #2b1b3d; position: relative; }
   .phone iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+  /* Full screen game: the frame grows over the whole page and the page behind stays still */
+  html.locked, html.locked body { overflow: hidden; overscroll-behavior: none; }
+  .phone.full { display: block; position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; border: 0; border-radius: 0; z-index: 50; touch-action: none; }
+  .back { display: none; position: absolute; z-index: 2; top: 62px; left: 10px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(0,0,0,.4); color: #fff; place-items: center; padding: 0; cursor: pointer; }
+  .back svg { width: 22px; height: 22px; }
+  .phone.full .back { display: grid; }
+
+  /* On touch screens the game is opened full screen from a cover, never played inside the page */
+  .cover { display: none; position: absolute; inset: 0; width: 100%; border: 0; padding: 20px 16px; font: inherit; color: #fff; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: linear-gradient(180deg, #7a3cb8, #ff6a3d); }
+  .cover b { font-size: 26px; font-weight: 900; line-height: 1.1; }
+  .cover .go { margin-top: 18px; background: var(--signal); color: var(--ink); font-weight: 900; font-size: 20px; padding: 13px 40px; border-radius: 14px; box-shadow: 0 5px 0 #b39500; }
+  html.touch .phone:not(.full) iframe { display: none; }
+  html.touch .phone:not(.full) .cover { display: flex; }
   section { padding: 40px 0 8px; border-bottom: 1px solid var(--line); }
   h2 { font-weight: 900; font-size: clamp(24px, 5vw, 34px); letter-spacing: -.02em; line-height: 1.1; margin: 0 0 14px; }
   p { margin: 0 0 14px; max-width: 760px; }
@@ -50,8 +64,8 @@
       <h1>Stack Ball: Спаси котика</h1>
       <p class="lead">Playable-реклама для игры Stack Ball (Azur Games). Держи палец — шар пробивает башню, отпускай перед чёрным. Внизу котик в клетке, сверху опускаются шипы: успей спасти.</p>
       <div class="actions">
-        <a class="btn main" href="play/">Играть</a>
-        <a class="btn" href="play/?lang=ru">Играть на русском</a>
+        <a class="btn main" href="play/" data-play>Играть</a>
+        <a class="btn" href="play/?lang=ru" data-play>Играть на русском</a>
         <a class="btn" href="demo/">Варианты и воронка</a>
       </div>
       <div class="links">
@@ -59,7 +73,11 @@
         <a href="https://github.com/spisusha/stackball-save-the-kitty">Код и описание на GitHub</a>
       </div>
     </div>
-    <div class="phone"><iframe src="play/" title="Плейбл" loading="lazy"></iframe></div>
+    <div class="phone" id="phone">
+      <iframe id="game" title="Плейбл" allow="autoplay"></iframe>
+      <button class="cover" id="cover"><b>Спаси котика</b><span class="go">Играть</span></button>
+      <button class="back" id="back" aria-label="Назад"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
   </div>
 
   <section>
@@ -89,5 +107,53 @@
 
   <footer>Неофициальный концепт для собеседования, не реклама Azur Games. Stack Ball и все права на игру принадлежат Azur Games.</footer>
 </div>
+
+<script>
+  // "Play" opens the game over the whole screen with a back button, so a finger on the game
+  // never scrolls or zooms the page. On computers the phone frame next to the text plays right away.
+  const touch = matchMedia('(pointer: coarse)').matches;
+  document.documentElement.classList.toggle('touch', touch);
+  const phone = document.getElementById('phone');
+  let frame = document.getElementById('game');
+  const viewport = document.querySelector('meta[name=viewport]');
+  const VIEWPORT = viewport.content;
+  let full = false, current = '';
+  // Every load gets a fresh frame. Navigating the old one would add a step to the browser
+  // history, and "back" would first show its previous page (a black screen) instead of closing the game
+  function go(url) {
+    current = url;
+    const f = document.createElement('iframe');
+    f.id = 'game'; f.title = 'Плейбл'; f.allow = 'autoplay';
+    if (url) f.src = url;
+    frame.replaceWith(f); frame = f;
+  }
+  if (!touch && getComputedStyle(phone).display !== 'none') go('play/');
+
+  function openFull(url) {
+    if (full) return;
+    full = true;
+    viewport.content = VIEWPORT + ', maximum-scale=1, user-scalable=no'; // undo page zoom while playing
+    document.documentElement.classList.add('locked');
+    phone.classList.add('full');
+    history.pushState({ game: 1 }, '');
+    if (current !== url) go(url); // load after the frame is full size
+    if (phone.requestFullscreen) phone.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+  }
+  function closeFull() {
+    if (!full) return;
+    full = false;
+    viewport.content = VIEWPORT;
+    document.documentElement.classList.remove('locked');
+    phone.classList.remove('full');
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    if (touch || getComputedStyle(phone).display === 'none') go(''); // free memory
+  }
+  // Back button, the phone's own back and Esc all close the game the same way
+  document.getElementById('back').addEventListener('click', () => history.back());
+  addEventListener('popstate', closeFull);
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && full) history.back(); });
+  document.getElementById('cover').addEventListener('click', () => openFull('play/'));
+  document.querySelectorAll('[data-play]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); openFull(a.getAttribute('href')); }));
+</script>
 </body>
 </html>

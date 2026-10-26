@@ -32,6 +32,7 @@ const TEXTS = {
     fireToast: 'FIRE COMES SOONER!',
     watch: 'WATCH',
     yourTurn: 'YOUR TURN!',
+    restart: 'TAP TO RESTART',
   },
   ru: {
     save: 'СПАСИ КОТИКА!',
@@ -65,6 +66,7 @@ const TEXTS = {
     fireToast: 'ОГОНЬ НАСТУПИТ РАНЬШЕ!',
     watch: 'СМОТРИ',
     yourTurn: 'ТЕПЕРЬ ТЫ!',
+    restart: 'НАЖМИ, ЧТОБЫ ПЕРЕЗАПУСТИТЬ',
   },
 };
 

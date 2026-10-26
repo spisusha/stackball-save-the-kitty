@@ -93,6 +93,11 @@ body.rescue #goal { display: block; }
 #result h2 { margin: 0 0 6px; font-size: clamp(34px, 10vmin, 46px); font-weight: 900; text-shadow: 0 3px 0 rgba(0,0,0,.3); }
 #result p { margin: 0 0 24px; font-size: 18px; font-weight: 700; }
 
+/* Shown only if the phone drops the 3D context */
+#lost { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(20,10,40,.85); z-index: 9; text-align: center; padding: 16px; cursor: pointer; }
+#lost.on { display: flex; }
+#lost b { font-size: 22px; font-weight: 900; background: #ffd400; color: #111; padding: 14px 24px; border-radius: 14px; box-shadow: 0 5px 0 #b39500; }
+
 /* End card */
 #endcard { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; z-index: 7; background: linear-gradient(180deg, rgba(60,20,90,.82), rgba(200,70,40,.82)); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); padding: 16px; }
 #endcard.on { display: flex; animation: fadein .35s ease-out; }
