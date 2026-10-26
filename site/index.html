@@ -124,7 +124,7 @@
     current = url;
     const f = document.createElement('iframe');
     f.id = 'game'; f.title = 'Плейбл'; f.allow = 'autoplay';
-    if (url) f.src = url;
+    if (url) f.src = url + (/[?&]debug=1/.test(location.search) ? (url.includes('?') ? '&' : '?') + 'debug=1' : ''); // diagnostic line inside the game
     frame.replaceWith(f); frame = f;
   }
   if (!touch && getComputedStyle(phone).display !== 'none') go('play/');

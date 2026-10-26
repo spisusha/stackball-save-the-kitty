@@ -694,12 +694,39 @@ function update(dt) {
   if (comboTimer > 0) { comboTimer -= dt; if (comboTimer <= 0) ui.combo.style.opacity = 0; }
 }
 
+// Prepare every effect's shader while loading. Otherwise the phone prepares it the first time the
+// effect appears (rocket flame, shock wave, trail), and that is a visible hitch in the middle of the game.
+function warmUp() {
+  const hidden = [flame, flameCore, ...trail, ...waves.map((w) => w.m)].filter((m) => !m.visible);
+  hidden.forEach((m) => { m.visible = true; });
+  renderer.compile(scene, camera);
+  renderer.render(scene, camera); // the first draw finishes the work on the GPU side
+  hidden.forEach((m) => { m.visible = false; });
+}
+
+// Not every phone keeps up at full sharpness (fast 90-120 Hz screens, power saving).
+// If many frames come late, lower the resolution one step, never below 1 pixel per point.
+let pixelRatio = renderer.getPixelRatio(), speedT = 0, speedFrames = 0, lateFrames = 0;
+function watchSpeed(rawDt) {
+  if (phase !== 'play' && phase !== 'demo' && phase !== 'intro') return;
+  speedT += Math.min(rawDt, 0.5); speedFrames++;
+  if (rawDt > 1 / 45) lateFrames++; // later than ~22 ms: a frame the eye notices
+  if (speedT < 1.5) return; // judge every 1.5 s of play
+  if (lateFrames > speedFrames * 0.1 && pixelRatio > 1) {
+    pixelRatio = Math.max(1, pixelRatio - 0.5);
+    renderer.setPixelRatio(pixelRatio);
+    track('quality', { pixelRatio });
+  }
+  speedT = speedFrames = lateFrames = 0;
+}
+
 let loopErrors = 0;
 function loop() {
   requestAnimationFrame(loop); // schedule first, so one bad frame can never stop the game
-  const dt = Math.min(clock.getDelta(), 0.033);
+  const rawDt = clock.getDelta();
+  const dt = Math.min(rawDt, 0.033);
   try {
-    if (!document.hidden && !window.__pause && phase !== 'boot') update(dt);
+    if (!document.hidden && !window.__pause && phase !== 'boot') { update(dt); watchSpeed(rawDt); }
     renderer.render(scene, camera);
   } catch (err) {
     if (loopErrors++ < 3) { console.error(err); track('error', { kind: 'frame', message: String(err && err.message).slice(0, 80) }); }
@@ -722,7 +749,31 @@ window.__intro = () => { ui.end.classList.remove('on'); ui.result.classList.remo
 window.__pick = (type) => pickBall(type);
 window.__danger = () => phase === 'play' && k < N && rings[k].black[segmentUnderBall(rings[k])] && fireT <= 0;
 
+// ?debug=1: a small line on screen with what the game sees, for checking on a real phone
+if (/[?&]debug=1/.test(location.search)) {
+  const box = document.createElement('div');
+  box.style.cssText = 'position:fixed;left:4px;bottom:4px;z-index:20;font:12px/1.35 monospace;color:#fff;background:rgba(0,0,0,.7);padding:5px 7px;border-radius:6px;pointer-events:none;white-space:pre';
+  document.body.appendChild(box);
+  const seen = { down: 0, up: 0, cancel: 0, touch: 0, menu: 0 };
+  addEventListener('pointerdown', () => seen.down++, true);
+  addEventListener('pointerup', () => seen.up++, true);
+  addEventListener('pointercancel', () => seen.cancel++, true);
+  addEventListener('touchstart', () => seen.touch++, true);
+  addEventListener('contextmenu', () => seen.menu++, true);
+  let frames = 0;
+  (function count() { frames++; requestAnimationFrame(count); })();
+  setInterval(() => {
+    const err = window.__pbEvents.filter((e) => e.name === 'error').map((e) => e.kind + ' ' + (e.message || '')).pop() || '-';
+    box.textContent = 'phase ' + phase + '  rings ' + k + '/' + N + '  hold ' + holding + '\n'
+      + 'fps ' + frames * 2 + '  sharp ' + pixelRatio + '/' + (window.devicePixelRatio || 1).toFixed(2) + '  hidden ' + document.hidden + '  gl ' + (renderer.getContext().isContextLost() ? 'LOST' : 'ok') + '\n'
+      + 'down ' + seen.down + ' up ' + seen.up + ' cancel ' + seen.cancel + ' touch ' + seen.touch + ' menu ' + seen.menu + '\n'
+      + 'err ' + err + '\n' + navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 70);
+    frames = 0;
+  }, 500);
+}
+
 // ---------- Start ----------
 buildLevel();
+warmUp();
 loop();
 whenReady(() => { track('loaded', { variant }); startIntro(); });

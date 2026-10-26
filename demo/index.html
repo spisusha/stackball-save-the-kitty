@@ -231,6 +231,7 @@
   function load() {
     const q = new URLSearchParams({ variant: state.variant, lang: state.lang });
     if (state.demo === '1') q.set('demo', '1');
+    if (/[?&]debug=1/.test(location.search)) q.set('debug', '1'); // diagnostic line inside the game
     document.querySelectorAll('tr[data-row]').forEach((tr) => {
       const v = tr.dataset.row;
       tr.classList.toggle('on', v === state.variant || (v === 'demo' && state.demo === '1'));
