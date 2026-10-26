@@ -1,5 +1,5 @@
 :root { --c: #f2a900; --font: system-ui, -apple-system, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #2b1b3d; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
 body { font-family: var(--font); color: #fff; }
 canvas { display: block; position: fixed; inset: 0; }

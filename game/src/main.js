@@ -487,6 +487,14 @@ function onDown(e) {
 function onUp() { holding = false; if (fireT <= 0) chain = 0; }
 addEventListener('pointerdown', onDown);
 addEventListener('pointerup', onUp);
+// Phones count a touch as a real tap only when the finger lifts, so sound is unlocked there too
+// (otherwise Safari may keep the sound off until some button is pressed)
+addEventListener('pointerup', () => { if (userTapped) unlockAudio(); });
+// iPhone: holding a finger starts text selection and shows the magnifier over the game.
+// Cancel the browser's own touch gestures on the play area; buttons and cards keep their taps.
+addEventListener('touchstart', (e) => {
+  if (!(e.target.closest && e.target.closest('button, #endcard, #result, #pick, #lost'))) e.preventDefault();
+}, { passive: false });
 addEventListener('pointercancel', onUp);
 addEventListener('blur', onUp);
 

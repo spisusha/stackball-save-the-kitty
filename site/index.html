@@ -29,6 +29,10 @@
 
   /* Full screen game: the frame grows over the whole page and the page behind stays still */
   html.locked, html.locked body { overflow: hidden; overscroll-behavior: none; }
+  /* iPhone Safari shows the page under its address bar: hide the page and paint that strip in the game's colour */
+  html.locked, html.locked body { background: #2b1b3d; }
+  html.locked body { visibility: hidden; }
+  html.locked .phone.full { visibility: visible; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
   .phone.full { display: block; position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; border: 0; border-radius: 0; z-index: 50; touch-action: none; }
   .back { display: none; position: absolute; z-index: 2; top: 62px; left: 10px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(0,0,0,.4); color: #fff; place-items: center; padding: 0; cursor: pointer; }
   .back svg { width: 22px; height: 22px; }
