@@ -52,6 +52,16 @@
   th, td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); }
   th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--grey); font-weight: 700; border-bottom: 1px solid var(--ink); }
   td:first-child { font-weight: 700; white-space: nowrap; }
+  .table.long td:first-child { white-space: normal; min-width: 150px; }
+  /* Phone: each row becomes a small card, so the "what we do" column is not hidden off-screen */
+  @media (max-width: 600px) {
+    .table.long table { min-width: 0; }
+    .table.long tr:first-child { display: none; }
+    .table.long tr { display: block; padding: 12px 0; border-bottom: 1px solid var(--line); }
+    .table.long td { display: block; border: 0; padding: 2px 0; min-width: 0; }
+    .table.long td:nth-child(2)::before { content: "Значит: "; color: var(--grey); }
+    .table.long td:nth-child(3)::before { content: "Делаем: "; color: var(--grey); }
+  }
   .muted { color: var(--grey); }
   footer { padding-top: 28px; font-size: 14px; color: var(--grey); }
   @media (max-width: 860px) {
@@ -95,6 +105,21 @@
       <tr><td>Варианты</td><td>A «Классика» (контроль), B «Спаси котика», C «Выбери шар», плюс режим «сначала покажи, как играть»</td></tr>
       <tr><td>Метрики</td><td>События воронки внутри плейбла: начал играть, проиграл, победил, увидел экран установки, нажал «Играть»</td></tr>
     </table></div>
+  </section>
+
+  <section>
+    <h2>Что делать по итогам теста</h2>
+    <p>Каждый вариант сравниваем с A. Главная метрика — IPM (установки на 1000 показов), за ней удержание D1 и окупаемость (ROAS). Решаем только когда разница значимая, а причину ищем в воронке событий.</p>
+    <div class="table long"><table>
+      <tr><th>Результат</th><th>Что это значит</th><th>Что делаем дальше</th></tr>
+      <tr><td>B выше A по IPM, D1 не хуже</td><td>Котик и шипы приводят больше людей, и это те же игроки</td><td>B в основную ротацию. Следующий тест — сам крючок: другой питомец, скорость шипов, длина интро</td></tr>
+      <tr><td>B выше A по IPM, но D1 ниже</td><td>Котик привлекает тех, кто ждёт игру про котика, а в Stack Ball его нет</td><td>Смотрим окупаемость, а не только IPM. Пробуем финал, где после спасения показана настоящая игра, или крючок ближе к игре</td></tr>
+      <tr><td>B на уровне A</td><td>Эмоция не сработала, причину ищем в воронке</td><td>Мало начавших — длинный старт: тест с показом или короче интро. Много проигрышей на шипах — давление слишком сильное, шипы медленнее</td></tr>
+      <tr><td>C: начавших больше, IPM тот же</td><td>Выбор шара вовлекает, но не продаёт</td><td>Оставляем выбор, только если вырос и CTR на end card. Иначе убираем: это лишний шаг до игры</td></tr>
+      <tr><td>Показ: касаются раньше, начавших больше</td><td>Меньше людей теряется на старте</td><td>Включаем показ по умолчанию в победившем варианте</td></tr>
+      <tr><td>Показ: начавших меньше</td><td>Люди смотрят и уходят, не дождавшись своей очереди</td><td>Убираем показ или сокращаем до 1–2 секунд</td></tr>
+    </table></div>
+    <p class="muted">Как по воронке понять, где теряем людей, — на странице <a href="demo/">вариантов</a>.</p>
   </section>
 
   <section>
